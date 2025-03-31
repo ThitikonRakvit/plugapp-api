@@ -90,6 +90,32 @@ app.post("/user-car", async (req, res) => {
   }
 });
 
+app.get("/user-cars/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const userCars = await prisma.userCarRel.findMany({
+      where: { userId: Number(userId) },
+      include: {
+        Car: true,
+      },
+    });
+
+    if (!userCars || userCars.length === 0) {
+      return res.status(404).json({ message: "No cars found for this user." });
+    }
+
+    const carData = userCars.map((userCar) => ({
+      name: userCar.name,
+      car: userCar.Car,
+    }));
+
+    res.status(200).json({ message: "User cars found", data: carData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error retrieving user cars", error });
+  }
+});
+
 app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Example app listening on port ${process.env.PORT}`);
 });
