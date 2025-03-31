@@ -57,7 +57,37 @@ app.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  res.json({ message: "Login successful" });
+  res.json({
+    message: "Login successful",
+    user: { id: user.id, username: user.email },
+  });
+});
+
+app.post("/user-car", async (req, res) => {
+  const { name, brand, model, userId } = req.body;
+
+  try {
+    const car = await prisma.car.findFirst({
+      where: { brand, model },
+    });
+
+    if (!car) {
+      return res.status(404).json({ message: "Car not found" });
+    }
+
+    const userCarRel = await prisma.userCarRel.create({
+      data: {
+        name,
+        userId: Number(userId),
+        carId: car.id,
+      },
+    });
+
+    res.status(201).json({ message: "User-Car relation added", userCarRel });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error adding UserCarRel", error });
+  }
 });
 
 app.listen(process.env.PORT, "0.0.0.0", () => {
