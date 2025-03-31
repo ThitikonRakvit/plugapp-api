@@ -116,6 +116,27 @@ app.get("/user-cars/:userId", async (req, res) => {
   }
 });
 
+app.get("/charging-stations", async (req, res) => {
+  try {
+    const chargingStations = await prisma.chargingStation.findMany();
+
+    if (!chargingStations || chargingStations.length === 0) {
+      return res.status(404).json({ message: "No charging stations found" });
+    }
+
+    res.status(200).json({
+      message: "Charging stations fetched successfully",
+      data: chargingStations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching charging stations",
+      error: error.message,
+    });
+  }
+});
+
 app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Example app listening on port ${process.env.PORT}`);
 });
